@@ -1,0 +1,481 @@
+---
+title: "101c reduced"
+author: "Nicholas Ortega"
+date: "11/19/2019"
+output: html_document
+---
+
+
+# things to try:
+## svm, generalized boosting model. knn
+## tuning xgboost and svm in python?
+## better ensemble model
+## some sort of feature engineering
+
+```{r}
+# before you do this move HTWins, also kill id, gameid, and date as usual
+# dummytrain <- read.csv("~/Downloads/101cfinaldata/train.csv", header = T, stringsAsFactors = F)
+# dummytrain <- dummytrain[, -c(1:3, 8)]
+# dmy <- dummyVars("~.", data = dummytrain)
+# newtrain <- data.frame(predict(dmy, newdata = dummytrain))
+# head(newtrain)
+# pred rf
+# predictions <- predict(rf, newdata = data.frame(test[, num_vars_test]), type = 'prob')
+# pred_vals <- rep(NA, nrow(test))
+# 
+# for(i in 1:nrow(predictions)) {
+#   pred_vals[i] <- ifelse(which.max(predictions[i, ]) == 1, 'No', 'Yes') 
+# }
+# 
+# csv_out <- data.frame(id = test$id, HTWins = pred_vals)
+# write.table(csv_out, file = '~/Downloads/submission2.csv', row.names = F, sep = ",")
+```
+
+
+```{r}
+train <- read.csv("C:/Users/orteg/Downloads/fall-2019-stats-101c/train.csv", header = T, stringsAsFactors = F)
+test <- read.csv("C:/Users/orteg/Downloads/fall-2019-stats-101c/test.csv", header = T, stringsAsFactors = F)
+mytest=test
+train <- train[, -c(1,2,8)]
+train$HTWins <- as.factor(train$HTWins)
+num_vars <- unlist(lapply(train, is.numeric))
+test <- test[, -c(1, 2, 7)]
+num_vars_test <- unlist(lapply(test, is.numeric))
+plmin <- grepl('plmin', names(train))
+ast <- grepl('ast', names(train))
+pts <- grepl('pts', names(train))
+fgm <- grepl('fgm', names(train))
+plmin_vars <- train[, plmin]
+ast_vars <- train[, ast]
+pts_vars <- train[, pts]
+fgm_vars <- train[, fgm]
+plmin_test <- grepl('plmin', names(test))
+ast_test <- grepl('ast', names(test))
+pts_test <- grepl('pts', names(test))
+fgm_test <- grepl('fgm', names(test))
+plmin_vars_test <- test[, plmin_test]
+ast_vars_test <- test[, ast_test]
+pts_vars_test <- test[, pts_test]
+fgm_vars_test <- test[, fgm_test]
+cormat <- cor(data.frame(plmin_vars, ast_vars))
+
+```
+
+
+```{r}
+library(e1071)
+svm.train <- data.frame(y = train$HTWins, scale(plmin_vars), scale(ast_vars))
+svm.model1 <- svm(y~., data = svm.train, kernel="linear", cost = 0.001)
+#summary(svm.model)
+#tune.svm <- tune(svm, y~., data = svm.train, kernel = 'linear', ranges=list(cost=c(0.001, 0.01, 0.1, 1,5,10,100)))
+svm_test <- data.frame(scale(plmin_vars_test), scale(ast_vars_test))
+svm_pred1 <- predict(svm.model1, newdata = svm_test, type='class')
+csv_out <- data.frame(id = mytest$id, HTWins = svm_pred1)
+write.table(csv_out, file = 'C:/Users/orteg/Downloads/test_submission.csv', row.names = F, sep = ",")
+
+
+
+```
+
+```{r}
+library(e1071)
+svm.train <- data.frame(y = train$HTWins, scale(plmin_vars), scale(ast_vars))
+svm.model2 <- svm(y~., data = svm.train, kernel="linear", cost = 0.01)
+#summary(svm.model)
+#tune.svm <- tune(svm, y~., data = svm.train, kernel = 'linear', ranges=list(cost=c(0.001, 0.01, 0.1, 1,5,10,100)))
+svm_test <- data.frame(scale(plmin_vars_test), scale(ast_vars_test))
+svm_pred2 <- predict(svm.model2, newdata = svm_test, type='class')
+csv_out <- data.frame(id = mytest$id, HTWins = svm_pred2)
+write.table(csv_out, file = 'C:/Users/orteg/Downloads/test_submission2.csv', row.names = F, sep = ",")
+```
+
+
+
+
+```{r}
+library(e1071)
+svm.train <- data.frame(y = train$HTWins, scale(plmin_vars), scale(ast_vars))
+svm.model3 <- svm(y~., data = svm.train, kernel="linear", cost = 0.1)
+#summary(svm.model)
+#tune.svm <- tune(svm, y~., data = svm.train, kernel = 'linear', ranges=list(cost=c(0.001, 0.01, 0.1, 1,5,10,100)))
+svm_test <- data.frame(scale(plmin_vars_test), scale(ast_vars_test))
+svm_pred3 <- predict(svm.model3, newdata = svm_test, type='class')
+csv_out <- data.frame(id = mytest$id, HTWins = svm_pred3)
+write.table(csv_out, file = 'C:/Users/orteg/Downloads/test_submission3.csv', row.names = F, sep = ",")
+```
+
+
+```{r}
+library(e1071)
+svm.train <- data.frame(y = train$HTWins, scale(plmin_vars), scale(ast_vars))
+svm.model4 <- svm(y~., data = svm.train, kernel="linear", cost = 1)
+#summary(svm.model)
+#tune.svm <- tune(svm, y~., data = svm.train, kernel = 'linear', ranges=list(cost=c(0.001, 0.01, 0.1, 1,5,10,100)))
+svm_test <- data.frame(scale(plmin_vars_test), scale(ast_vars_test))
+svm_pred4 <- predict(svm.model4, newdata = svm_test, type='class')
+csv_out <- data.frame(id = mytest$id, HTWins = svm_pred4)
+write.table(csv_out, file = 'C:/Users/orteg/Downloads/test_submission4.csv', row.names = F, sep = ",")
+```
+
+
+```{r}
+library(e1071)
+svm.train <- data.frame(y = train$HTWins, scale(plmin_vars), scale(ast_vars))
+svm.model5 <- svm(y~., data = svm.train, kernel="linear", cost = 5)
+#summary(svm.model)
+#tune.svm <- tune(svm, y~., data = svm.train, kernel = 'linear', ranges=list(cost=c(0.001, 0.01, 0.1, 1,5,10,100)))
+svm_test <- data.frame(scale(plmin_vars_test), scale(ast_vars_test))
+svm_pred5 <- predict(svm.model5, newdata = svm_test, type='class')
+csv_out <- data.frame(id = mytest$id, HTWins = svm_pred5)
+write.table(csv_out, file = 'C:/Users/orteg/Downloads/test_submission5.csv', row.names = F, sep = ",")
+```
+
+
+```{r}
+library(e1071)
+svm.train <- data.frame(y = train$HTWins, scale(plmin_vars), scale(ast_vars))
+svm.model6 <- svm(y~., data = svm.train, kernel="linear", cost = 10)
+#summary(svm.model)
+#tune.svm <- tune(svm, y~., data = svm.train, kernel = 'linear', ranges=list(cost=c(0.001, 0.01, 0.1, 1,5,10,100)))
+svm_test <- data.frame(scale(plmin_vars_test), scale(ast_vars_test))
+svm_pred6 <- predict(svm.model6, newdata = svm_test, type='class')
+csv_out <- data.frame(id = mytest$id, HTWins = svm_pred6)
+write.table(csv_out, file = 'C:/Users/orteg/Downloads/test_submission6.csv', row.names = F, sep = ",")
+
+```
+
+```{r}
+library(e1071)
+svm.train <- data.frame(y = train$HTWins, scale(plmin_vars), scale(ast_vars))
+svm.model7 <- svm(y~., data = svm.train, kernel="linear", cost = 100)
+#summary(svm.model)
+#tune.svm <- tune(svm, y~., data = svm.train, kernel = 'linear', ranges=list(cost=c(0.001, 0.01, 0.1, 1,5,10,100)))
+svm_test <- data.frame(scale(plmin_vars_test), scale(ast_vars_test))
+svm_pred7 <- predict(svm.model7, newdata = svm_test, type='class')
+csv_out <- data.frame(id = mytest$id, HTWins = svm_pred7)
+write.table(csv_out, file = 'C:/Users/orteg/Downloads/test_submission7.csv', row.names = F, sep = ",")
+```
+
+
+
+# Random Forest [try using caret]
+
+```{r}
+require(randomForest)
+require(rfUtilities)
+# misclassifies No as Yes very often, not sure how to fix that issue..
+# base model
+ rf <- randomForest(y~., data = data.frame(y = train$HTWins, train[, num_vars]), ntree = 500, mtry = 14, importance=F)
+plot(rf)
+# more important - +/-, assists
+# less important - pts, other numerical variables
+varImpPlot(rf)
+# 14 predictors is good from tune
+# tune <- tuneRF(x = data.frame(train[, num_vars]), y = train$HTWins, stepFactor = 2)
+# tried some manual parameter tuning
+# model 2 and variants
+rf2 <- randomForest(y~., data = data.frame(y = train$HTWins, train[, num_vars]), mtry = 14, importance=F,
+                    sampsize = c(80, 120), cutoff = c(0.45, 0.55), ntree = 1000)
+# i think this one is pretty good.
+rf2.3 <- randomForest(y~., data = data.frame(y = train$HTWins, train[, num_vars]), mtry = 14, importance=F,
+                    sampsize = c(80, 120), cutoff = c(0.45, 0.55), ntree = 3000, nodesize = 5)
+rf2.3
+rf_importance <- randomForest(y~., data = data.frame(y = train$HTWins, train[, num_vars]), mtry = 14,
+                              importance=T, sampsize = c(80, 120), cutoff = c(0.45, 0.55), ntree = 3000,
+                              nodesize = 5)
+# nodesize = 5 gives a lower oob estimate
+# # lower oob estimate from less test samples in sampsize, but more incorrect classification of no
+# less weight on no is better, seems like (.45, .55) was already good enough
+# was using this for a while, not great..
+# rf3 <- randomForest(y~., data = data.frame(y = train$HTWins, plmin_vars, ast_vars), mtry = 14, importance = F,
+#                     sampsize = c(80, 120), cutoff = c(0.45, 0.55), ntree = 1000, nodesize = 3)
+# rf3
+```
+
+
+# XGBOOST
+```{r}
+# feature interaction constraints?
+require(xgboost)
+xg <- xgboost(data = data.matrix(xg_train),
+              label = as.integer(xg_label),
+              eta = 0.1,
+              max_depth = 6,
+              nrounds = 100,
+              subsample = 0.5,
+              colsample_bytree = 0.5,
+              seed = 1,
+              eval_metric = 'error',
+              objective = 'binary:logistic')
+              
+test_id <- test$id
+xg_test <- test[, -c(1:7)]
+xg_test <- xg_test[, -c(209, 210)]
+xg_pred <- predict(xg, newdata = data.matrix(xg_test))
+xg_factor <- ifelse(xg_pred > 0.5, 'Yes', 'No')
+csv_out <- data.frame(id = test$id, HTWins = xg_factor)
+table(csv_out$HTWins)
+#write.table(csv_out, file = '~/Downloads/submission3.csv', row.names = F, sep = ",")
+```
+
+
+# manual xgboost cv [bad]
+```{r}
+require(svMisc)
+# xg_train <- data.matrix(xg_train)
+best_param = list()
+best_seednumber = 1234
+best_loss = Inf
+best_loss_index = 0
+for (iter in 1:100) {
+    print(iter)
+    progress(iter, progress.bar = T)
+    param <- list(objective = "binary:logistic",
+          eval_metric = "error",
+          max_depth = sample(6:10, 1),
+          eta = runif(1, .01, .1),
+          gamma = runif(1, 0.0, 0.2), 
+          subsample = runif(1, .5, .9),
+          colsample_bytree = runif(1, .5, .8), 
+          min_child_weight = sample(1:40, 1),
+          max_delta_step = sample(1:10, 1))
+    cv.nround = 200
+    cv.nfold = 5
+    seed.number = sample.int(10000, 1)[[1]]
+    set.seed(seed.number)
+    mdcv <- xgb.cv(data=xg_train, label = xg_label, params = param, 
+                    nfold=cv.nfold, nrounds=cv.nround,
+                    verbose = F, early_stopping_rounds=8, maximize=FALSE)
+    min_loss =  mdcv$evaluation_log[mdcv$best_iteration, ][[4]]
+    min_loss_index = mdcv$best_iteration
+    
+    if (min_loss < best_loss) {
+        best_loss = min_loss
+        best_loss_index = min_loss_index
+        best_seednumber = seed.number
+        best_param = param
+    }
+}
+```
+
+
+# caret [this takes way too long, do it in python or use GPU]
+```{r}
+library(caret)
+library(xgboost)
+xgb_grid = expand.grid(nrounds = 500, 
+                       max_depth = c(4, 6, 8, 10),
+                       eta = c(0.1, 0.05, 0.01),
+                       gamma = c(0.1, 0.2, 0.5, 1),
+                       colsample_bytree = c(0.5, 0.6, 0.7, 0.8),
+                       min_child_weight = c(1, 5, 10, 15, 20),
+                       subsample = c(0.5, 0.6, 0.7, 0.8))
+# pack the training control parameters
+xgb_trcontrol = trainControl(
+  method = "cv",
+  number = 5,
+  verboseIter = TRUE,
+  returnData = FALSE,
+  returnResamp = "all",                                                    
+  classProbs = TRUE)
+# train the model for each parameter combination in the grid, 
+# using CV to evaluate
+xgb_train = train(xg_label~., data = xg_train, trControl = xgb_trcontrol, tuneGrid = xgb_grid, method = "xgbTree")
+```
+
+
+
+
+
+# xgboost [using parameters from random search]
+```{r}
+library(xgboost)
+xg_train <- data.frame(plmin_vars, ast_vars)
+xg_train <- as.matrix(xg_train)
+xg_label <- as.factor(train$HTWins)
+xg_model <- xgboost(data = data.matrix(xg_train),
+              label = as.integer(as.factor(xg_label))-1,
+              params = best_param,
+              nrounds = 40,
+              seed.number = best_seednumber)
+xg_scaled <- xgboost(data = data.matrix(scale(xg_train)),
+              label = as.integer(as.factor(xg_label))-1,
+              params = best_param,
+              nrounds = 40,
+              seed.number = 2801)
+# set.seed(best_seednumber)
+# xgb_cv_out <- xgb.cv(params = best_param, data = data.matrix(xg_train), nrounds = 42,
+#        label = as.integer(as.factor(xg_label))-1, nfold = 5)
+xg_test <- data.frame(plmin_vars_test, ast_vars_test)
+xg_pred <- predict(xg_model, newdata = data.matrix(xg_test))
+xg_votes <- ifelse(xg_pred > 0.5, 'Yes', 'No')
+```
+
+
+
+
+
+
+# KNN, k = 40 [scale variables]
+
+```{r}
+library(class)
+knn.cl <- train$HTWins
+# using only +/-, assist variables
+knn.train <- data.frame(plmin_vars, ast_vars)
+knn.test <- data.frame(plmin_vars_test, ast_vars_test)
+# using all numerical variables - this takes too long for cv
+knn.train2 <- train[, num_vars]
+knn.test2 <- test[, num_vars_test]
+```
+
+
+# KNN CV [find optimal k for the scaled dataset]
+
+```{r}
+knn.cv.train <- data.frame(y = knn.cl, scale(knn.train))
+knn.cv.train2 <- data.frame(y = knn.cl, scale(knn.train2))
+trControl <- trainControl(method  = "cv",
+                          number  = 5)
+fit <- train(y~.,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = c(1, 10, 20, 30, 40, 50, 60, 70, 80, 90)),
+             trControl  = trControl,
+             metric     = "Accuracy",
+             data       = knn.cv.train)
+fit
+# k = 40
+knn.final <- knn(train = scale(knn.train), cl = knn.cl, test = scale(knn.test), k = 40)
+knn.final.cv <- knn.cv(train = knn.train, cl = knn.cl, k = 40)
+table(knn.final.cv, train$HTWins)
+```
+
+
+
+
+# SVM [need to tune parameters]
+
+```{r}
+library(e1071)
+svm.train <- data.frame(y = train$HTWins, scale(plmin_vars), scale(ast_vars))
+svm.model <- svm(y~., data = svm.train, cost = 0.1)
+summary(svm.model)
+tune.svm <- tune(svm, y~., data = svm.train, kernel = 'radial', ranges = list(cost=c(0.1, 1)))
+svm_test <- data.frame(scale(plmin_vars_test), scale(ast_vars_test))
+svm_pred <- predict(tune.svm$best.model, newdata = svm_test, type='class')
+table(svm_pred)
+#cost = 0.1
+```
+
+# GBM (very simple)
+
+```{r}
+library(gbm)
+gb <- gbm(as.integer(as.factor(train$HTWins))-1~., 
+          distribution = 'bernoulli', 
+          data = data.frame(scale(plmin_vars), scale(ast_vars)), 
+          shrinkage = 0.01, 
+          interaction.depth = 1,
+          n.trees = 1000,
+          cv.folds = 10)
+summary(gb)
+sum(gb$cv.error)/1000    # ntrees
+gb_test <- data.frame(scale(plmin_vars_test), scale(ast_vars_test))
+gb_prob <- predict(gb, newdata = gb_test, type = 'response', n.trees = 1000)
+gb_pred <- ifelse(gb_prob < 0.5, 'No', 'Yes')
+```
+
+
+# Majority voting among models
+# Strongest is random forest, then knn, then xgboost
+
+# So it seems like many of the models are giving similar results, and for the most part the error comes from misclassifying "No" as "Yes"
+# so the problem is how do we improve the models based on that..
+
+# time for feature engineering?
+
+```{r}
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+pred_vals_rf <- rep(NA, nrow(test))
+predictions_rf <- predict(rf2.3, newdata = test[, num_vars_test], type = 'prob')
+for(i in 1:nrow(predictions_rf)) {
+  pred_vals_rf[i] <- ifelse(which.max(predictions_rf[i, ]) == 1, 'No', 'Yes') 
+}
+# vars are scaled already
+pred_knn <- as.factor(knn.final)
+all_models <- data.frame(pred_vals_rf, xg_factor, knn.final, gb_pred, svm_pred)
+ind_votes <- data.frame(pred_vals_rf, xg_factor, pred_knn)
+final_vote <- rep(NA, nrow(ind_votes))
+for(i in 1:nrow(ind_votes)) {
+  final_vote[i] <- Mode(ind_votes[i, ][[1]])
+}
+encoded_vote <- ifelse(final_vote == 1, 'No', 'Yes')
+csv_out <- data.frame(id = test$id, HTWins = encoded_vote)
+write.table(csv_out, file = '~/Downloads/submission10.csv', row.names = F, sep = ",")
+```
+
+
+
+
+
+# Logistic Regression Model
+```{r}
+# plmin_i <- grepl('plmin', names(train))
+# plmin_vars <- train[, plmin_i]
+# a <- cbind(y, plmin_vars)
+# 
+# logistic_model <- glm(y~., family = 'binomial', data = data.frame(y, train[, plmin_i]))
+# summary(logistic_model)
+# 
+# plmin_test <- grepl('plmin', names(test))
+log_model <- glm(y~., family = 'binomial', data = data.frame(y, train[, num_vars]))
+summary(log_model)
+# multicollinearity problem, check VIF
+alias(log_model)
+vif(log_model)
+pred_prob <- predict(log_model, newdata = data.frame(test[, num_vars]), type='response')
+pred_vals <- ifelse(pred_prob > 0.5, 'Yes', 'No')
+csv_out <- data.frame(id = test$id, HTWins = pred_vals)
+sum(csv_out$HTWins == 'Yes')
+sum(csv_out$HTWins == 'No')
+write.table(csv_out, file = '~/Downloads/test_submission.csv', row.names = F, sep = ",")
+```
+
+
+```{r}
+library(tidyverse)
+train=train %>% mutate(homewins=ifelse(HTWins=="Yes",1,0))
+mean(train$homewins)
+north=train %>% filter(HTleague=="N")
+mean(north$homewins)
+east=train %>% filter(HTleague=="E")
+mean(east$homewins)
+west=train %>% filter(HTleague=="W")
+mean(west$homewins)
+south=train %>% filter(HTleague=="S")
+mean(south$homewins)
+
+train %>% ggplot(HTleague,)
+```
+
+# have not tried support vector machines and generalized boosting
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
